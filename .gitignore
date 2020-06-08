@@ -1,0 +1,5 @@
+app/.nimble
+docker/.vscode-server
+mysql
+ws/bin
+jester/bin

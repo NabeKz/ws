@@ -1,0 +1,57 @@
+#-------------------------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
+#-------------------------------------------------------------------------------------------------------------
+
+version: '3'
+services:
+  app:
+    build: 
+      context: ./docker/nim/
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/workspace
+      - ./docker/.nimble/pkgs:/root/.nimble/pkgs
+      - ./docker/.vscode-server/extensions:/root/.vscode-server/extensions
+    command: public/main
+
+  ws:
+    build: 
+      context: ./docker/nim/
+      dockerfile: Dockerfile
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./ws:/workspace
+      - ./docker/.vscode-server/extensions:/root/.vscode-server/extensions
+      - ./docker/.nimble/pkgs:/root/.nimble/pkgs
+    tty: true
+
+  nginx:
+    build:
+      context: ./docker/nginx/
+      dockerfile: Dockerfile
+    links:
+      - app
+    volumes:
+      - ./app/public:/var/www
+    ports:
+      - "8010:80"
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_DATABASE=develop
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=develop
+      - MYSQL_PASSWORD=develop
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
